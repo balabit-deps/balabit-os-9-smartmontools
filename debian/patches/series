@@ -6,3 +6,4 @@
 default_never-quit.patch
 manpage.diff
 service-alias.patch
+lp2042885-fix-segfault-reading-nvme-error-log-on-be.patch

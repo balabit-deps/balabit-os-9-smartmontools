@@ -1,0 +1,60 @@
+Description: nvmecmds.cpp: Fix segfault after read of NVMe error log on big endian
+ hosts (GH issues/172, regression from r5121).
+ Thanks to Niklas Schnelle for the bug report.
+ git-svn-id: http://svn.code.sf.net/p/smartmontools/code/trunk@5448 4ea69e1a-61f1-4043-bf83-b5c94c648137
+Author: chrfranke <authors@smartmontools.org>
+Origin: backport, https://github.com/smartmontools/smartmontools/commit/8d8fb7b6933414be6d647ee944f3cd8e933947b5
+Bug-Ubuntu: https://bugs.launchpad.net/bugs/2042885
+Bug-IBM: BZ#203947
+Forwarded: not-needed
+Applied-Upstream: https://github.com/smartmontools/smartmontools/commit/8d8fb7b6933414be6d647ee944f3cd8e933947b5
+Reviewed-by: Frank Heimes <frank.heimes@canonical.com>
+Last-Update: 2023-12-03
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,5 +1,12 @@
+ $Id: ChangeLog 5155 2020-12-30 16:49:18Z chrfranke $
+ 
++2023-02-03  Christian Franke  <franke@computer.org>
++
++	nvmecmds.cpp: Fix segfault after read of NVMe error log on
++	big endian hosts (GH issues/172, regression from r5121).
++
++	Thanks to Niklas Schnelle for the bug report.
++
+ 2020-12-30  Christian Franke  <franke@computer.org>
+ 
+ 	smartmontools 7.2
+--- a/nvmecmds.cpp
++++ b/nvmecmds.cpp
+@@ -3,7 +3,7 @@
+  *
+  * Home page of code is: https://www.smartmontools.org
+  *
+- * Copyright (C) 2016-20 Christian Franke
++ * Copyright (C) 2016-23 Christian Franke
+  *
+  * SPDX-License-Identifier: GPL-2.0-or-later
+  */
+@@ -230,8 +230,9 @@
+   unsigned n = nvme_read_log_page(device, 0xffffffff, 0x01, error_log,
+                                   num_entries * sizeof(*error_log), lpo_sup);
+ 
++  unsigned read_entries = n / sizeof(*error_log);
+   if (isbigendian()) {
+-    for (unsigned i = 0; i < n; i++) {
++    for (unsigned i = 0; i < read_entries; i++) {
+       swapx(&error_log[i].error_count);
+       swapx(&error_log[i].sqid);
+       swapx(&error_log[i].cmdid);
+@@ -242,7 +243,7 @@
+     }
+   }
+ 
+-  return n / sizeof(*error_log);
++  return read_entries;
+ }
+ 
+ // Read NVMe SMART/Health Information log.

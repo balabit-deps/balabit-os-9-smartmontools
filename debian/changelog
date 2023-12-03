@@ -1,3 +1,10 @@
+smartmontools (7.2-1ubuntu0.1) jammy; urgency=medium
+
+  * Add d/p/lp2042885-fix-segfault-reading-nvme-error-log-on-be.patch
+    to fix a smartctl on NVME segmentation fault. (LP: #2042885) 
+
+ -- Zhaoxuan Zhai <zhai.zhaoxuan@canonical.com>  Sun, 03 Dec 2023 16:51:43 +0800
+
 smartmontools (7.2-1build2) jammy; urgency=high
 
   * No change rebuild for ppc64el baseline bump.
